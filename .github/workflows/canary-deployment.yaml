@@ -19,15 +19,31 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      # Primeiro, vamos obter informações da instância
+      # Debug step para verificar a API key
+      - name: Debug API Key
+        run: |
+          if [ -n "${{ secrets.MAGALU_API_KEY }}" ]; then
+            echo "API key está configurada"
+          else
+            echo "API key não está configurada"
+          fi
+
+      # Chamada da API ajustada
       - name: Get Instance Info
         id: instance-info
         run: |
-          INSTANCE_INFO=$(curl --location "${{ env.API_URL }}/compute/v1/instances" \
+          response=$(curl --silent --fail --location "${{ env.API_URL }}/compute/v1/instances" \
             --header "x-api-key: ${{ secrets.MAGALU_API_KEY }}" \
             --header "Accept: application/json")
-          echo "instance_info=$INSTANCE_INFO" >> $GITHUB_OUTPUT
           
+          if [ $? -eq 0 ]; then
+            echo "API call successful"
+            echo "instance_info=$response" >> $GITHUB_OUTPUT
+          else
+            echo "API call failed"
+            exit 1
+          fi
+
       - name: Configure Docker
         uses: docker/setup-buildx-action@v2
         
