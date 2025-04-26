@@ -18,32 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
-      # Debug step para verificar a API key
-      - name: Debug API Key
-        run: |
-          if [ -n "${{ secrets.MAGALU_API_KEY }}" ]; then
-            echo "API key está configurada"
-          else
-            echo "API key não está configurada"
-          fi
 
-      # Chamada da API ajustada
-      - name: Get Instance Info
-        id: instance-info
-        run: |
-          response=$(curl --silent --fail --location "${{ env.API_URL }}/compute/v1/instances" \
-            --header "x-api-key: ${{ secrets.MAGALU_API_KEY }}" \
-            --header "Accept: application/json")
-          
-          if [ $? -eq 0 ]; then
-            echo "API call successful"
-            echo "instance_info=$response" >> $GITHUB_OUTPUT
-          else
-            echo "API call failed"
-            exit 1
-          fi
-
+      # Vamos pular a chamada da API por enquanto e focar no deploy da imagem
       - name: Configure Docker
         uses: docker/setup-buildx-action@v2
         
@@ -83,8 +59,15 @@ jobs:
             docker tag ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
               ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:canary
             
-            # Execute o script de deploy
-            bash /opt/app/deploy.sh ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            # Parar e remover container antigo se existir
+            docker rm -f react-app-canary || true
+            
+            # Iniciar novo container
+            docker run -d \
+              --name react-app-canary \
+              --restart unless-stopped \
+              -p 3001:80 \
+              ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:canary
 
       - name: Cleanup
         if: always()
