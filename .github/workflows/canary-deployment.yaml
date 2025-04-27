@@ -9,7 +9,6 @@ on:
 
 env:
   REGISTRY: api.magalu.cloud
-  IMAGE_NAME: react-app
   MAGALU_REGION: br-se1
   TF_VAR_api_key: ${{ secrets.MAGALU_API_KEY }}
   CANARY_WEIGHT: 20
@@ -43,14 +42,25 @@ jobs:
       - name: Configure Docker
         uses: docker/setup-buildx-action@v2
 
+      - name: Create repository if not exists
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.MAGALU_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            "https://${{ env.REGISTRY }}/v2/${{ env.MAGALU_REGION }}/repositories" \
+            -d '{"name": "${{ github.repository }}"}'
+        continue-on-error: true
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:canary
-            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ github.repository }}:canary
+            ${{ env.REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+          build-args: |
+            REACT_APP_VERSION=${{ github.sha }}
 
       - name: Terraform Init
         run: terraform init

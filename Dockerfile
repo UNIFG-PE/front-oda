@@ -1,9 +1,11 @@
 # Build stage
-FROM node:16-alpine as builder
+FROM node:16-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+ARG REACT_APP_VERSION
+ENV REACT_APP_VERSION=$REACT_APP_VERSION
 RUN npm run build
 
 # Production stage
