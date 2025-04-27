@@ -53,11 +53,28 @@ const Login = () => {
         } else {
           setErro("Senha incorreta");
         }
-    } catch (error) {
+         /*
+        const response = await axios.post("http://localhost:8080/api/login", {
+            email: email,
+            senha: password,
+        });
+
+        if (response.status === 200) {
+            const { token, user } = response.data;
+            localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(user));
+            setErro("");
+            alert(`Bem-vindo, ${user.fullname}!`);
+
+            if (user.role === "ADMIN") {
+            navigate("/admin");
+            } else {
+            navigate("/user");
+            }
+        */
+        } catch (error) {
             setErro("Erro ao fazer login.");
           }
-       
-
 };
 
 return (
