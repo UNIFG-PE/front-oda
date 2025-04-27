@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('renders canary deployment title', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  const titleElement = screen.getByText(/teste canary deployment/i);
+  expect(titleElement).toBeInTheDocument();
+});
+
+test('renders version text', () => {
+  render(<App />);
+  const versionElement = screen.getByText(/versão:/i);
+  expect(versionElement).toBeInTheDocument();
 });
