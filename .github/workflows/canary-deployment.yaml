@@ -12,7 +12,7 @@ env:
   IMAGE_NAME: react-app
   MAGALU_REGION: br-se1
   TF_VAR_api_key: ${{ secrets.MAGALU_API_KEY }}
-  CANARY_WEIGHT: 20 # Porcentagem do tráfego para versão canary
+  CANARY_WEIGHT: 20
 
 jobs:
   test:
@@ -26,7 +26,7 @@ jobs:
           node-version: '16'
           
       - name: Install dependencies
-        run: npm install  # Mudando de npm ci para npm install
+        run: npm ci
         
       - name: Run tests
         run: npm test -- --watchAll=false

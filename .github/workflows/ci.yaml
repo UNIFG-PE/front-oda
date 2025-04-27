@@ -22,7 +22,7 @@ jobs:
           node-version: '16'
 
       - name: Install dependencies
-        run: npm install  # Mudando de npm ci para npm install
+        run: npm ci
 
       - name: Run tests
         run: npm test -- --watchAll=false
