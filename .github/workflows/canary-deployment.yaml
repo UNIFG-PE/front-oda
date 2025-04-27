@@ -12,7 +12,7 @@ env:
   MAGALU_REGION: br-se1
   TF_VAR_api_key: ${{ secrets.MAGALU_API_KEY }}
   CANARY_WEIGHT: 20
-  REPOSITORY_NAME: ${{ github.repository | downcase }}
+  IMAGE_NAME: front-oda
 
 jobs:
   test:
@@ -58,8 +58,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ github.repository | downcase }}:canary
-            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ github.repository | downcase }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:canary
+            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           build-args: |
             REACT_APP_VERSION=${{ github.sha }}
 
