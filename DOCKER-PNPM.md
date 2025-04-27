@@ -2,6 +2,22 @@
 
 Este projeto utiliza Docker com PNPM para um ambiente de desenvolvimento e produção mais rápido e eficiente.
 
+## Compatibilidade com Node.js
+
+O PNPM mais recente requer Node.js 18+. Fornecemos duas opções:
+
+1. **Node.js 18 (Recomendado)**: Usa a versão mais recente do PNPM
+   ```bash
+   ./setup-node18.sh
+   ```
+
+2. **Node.js 16**: Usa PNPM 7.30.5 (compatível com Node.js 16)
+   ```bash
+   ./setup-node16.sh
+   ```
+
+Escolha a opção que melhor se adapta ao seu ambiente.
+
 ## Benefícios desta Configuração
 
 1. **PNPM é muito mais rápido que NPM**: Instalação de dependências até 2x mais rápida

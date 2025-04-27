@@ -1,8 +1,8 @@
 # Build stage
-FROM node:18-alpine AS base
+FROM node:16-alpine AS base
 
-# Instalar PNPM globalmente
-RUN npm install -g pnpm
+# Instalar versão específica do PNPM compatível com Node.js 16
+RUN npm install -g pnpm@7.30.5
 
 # Configurar PNPM para ser mais rápido
 RUN pnpm config set registry https://registry.npmmirror.com/ && \
