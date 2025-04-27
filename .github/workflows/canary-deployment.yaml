@@ -43,14 +43,21 @@ jobs:
       - name: Configure Docker
         uses: docker/setup-buildx-action@v2
 
-      - name: Create repository if not exists
+      - name: Docker Login
+        run: |
+          echo "${{ secrets.MAGALU_API_KEY }}" | docker login ${{ env.REGISTRY }} --username "${{ secrets.MAGALU_API_KEY }}" --password-stdin
+
+      - name: Create repository
         run: |
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.MAGALU_API_KEY }}" \
             -H "Content-Type: application/json" \
-            "https://${{ env.REGISTRY }}/v2/${{ env.MAGALU_REGION }}/repositories" \
-            -d '{"name": "${{ env.IMAGE_NAME }}"}'
+            -d "{\"name\":\"${{ env.IMAGE_NAME }}\"}" \
+            "https://${{ env.REGISTRY }}/v2/${{ env.MAGALU_REGION }}/repositories"
         continue-on-error: true
+
+      - name: Wait for repository creation
+        run: sleep 10
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
