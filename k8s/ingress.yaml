@@ -4,7 +4,7 @@ metadata:
   name: react-app-ingress
   annotations:
     nginx.ingress.kubernetes.io/canary: "true"
-    nginx.ingress.kubernetes.io/canary-weight: "10"
+    nginx.ingress.kubernetes.io/canary-weight: "20"
 spec:
   rules:
   - host: seu-dominio.com.br
@@ -15,5 +15,22 @@ spec:
         backend:
           service:
             name: react-app-service
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: react-app-ingress-stable
+spec:
+  rules:
+  - host: seu-dominio.com.br
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: react-app-service-stable
             port:
               number: 80

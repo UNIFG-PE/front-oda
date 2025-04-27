@@ -1,4 +1,4 @@
-name: Deploy to Ubuntu Server
+name: Canary Deployment
 
 on:
   push:
@@ -11,24 +11,37 @@ env:
   REGISTRY: api.magalu.cloud
   IMAGE_NAME: react-app
   MAGALU_REGION: br-se1
-  API_URL: https://api.magalu.cloud/br-se1
+  TF_VAR_api_key: ${{ secrets.MAGALU_API_KEY }}
+  CANARY_WEIGHT: 20 # Porcentagem do tráfego para versão canary
 
 jobs:
-  build-and-deploy:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run tests
+        run: npm test -- --watchAll=false
+
+  deploy-canary:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      # Vamos pular a chamada da API por enquanto e focar no deploy da imagem
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        
       - name: Configure Docker
         uses: docker/setup-buildx-action@v2
-        
-      - name: Login to Magalu Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}
-          username: ${{ secrets.MAGALU_API_KEY }}
-          password: ${{ secrets.MAGALU_API_KEY }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -36,40 +49,41 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:canary
+            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      - name: Deploy to Ubuntu Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            # Login no registry
-            docker login ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }} \
-              -u ${{ secrets.MAGALU_API_KEY }} \
-              -p ${{ secrets.MAGALU_API_KEY }}
-            
-            # Pull da nova imagem
-            docker pull ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-            
-            # Deploy canary (10% do tráfego)
-            docker tag ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-              ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:canary
-            
-            # Parar e remover container antigo se existir
-            docker rm -f react-app-canary || true
-            
-            # Iniciar novo container
-            docker run -d \
-              --name react-app-canary \
-              --restart unless-stopped \
-              -p 3001:80 \
-              ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:canary
+      - name: Terraform Init
+        run: terraform init
 
-      - name: Cleanup
-        if: always()
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        
+      - name: Wait for deployment
+        run: sleep 60  # Aguarda 1 minuto para a VM inicializar
+
+      - name: Monitor Canary Health
+        id: monitor
         run: |
-          docker logout ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}
+          chmod +x ./monitor-canary.sh
+          ./monitor-canary.sh
+        
+      - name: Rollback if Canary Unhealthy
+        if: failure()
+        run: |
+          echo "Canary unhealthy, rolling back..."
+          terraform destroy -target=module.app_canary -auto-approve
+
+  promote-to-stable:
+    needs: deploy-canary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Promote Canary to Stable
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:stable
+
+      # Aqui você pode adicionar steps para atualizar a versão stable
+      # Por exemplo, atualizar um deployment do Kubernetes ou outra VM
