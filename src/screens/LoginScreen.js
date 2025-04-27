@@ -25,7 +25,38 @@ const Login = () => {
       setErro("Insira um email válido");
       return;
     }
-
+    try {
+        if (
+          (email === "admin@ulife.com.br" && password === "admin") ||
+          (email === "user@ulife.com.br" && password === "user")
+        ) {
+          const fakeResponse = {
+            data: {
+              role: email === "admin@ulife.com.br" ? "ADMIN" : "USER",
+              nome: email === "admin@ulife.com.br" ? "Administrador" : "Usuário Comum",
+            },
+          };
+  
+          alert(`Bem-vindo, ${fakeResponse.data.nome}`);
+          setErro("");
+          localStorage.setItem("userRole", fakeResponse.data.role);
+  
+          if (fakeResponse.data.role === "ADMIN") {
+            navigate("/admin");
+            window.location.reload();
+          } else {
+            navigate("/user");
+            window.location.reload();
+          }
+        } else if (email !== "admin@ulife.com.br" && email !== "user@ulife.com.br") {
+          setErro("Email não cadastrado");
+        } else {
+          setErro("Senha incorreta");
+        }
+    } catch (error) {
+            setErro("Erro ao fazer login.");
+          }
+       
 
 };
 
