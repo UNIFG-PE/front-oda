@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: react-app-stable
+  name: front-oda-stable
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: react-app
+      app: front-oda
       version: stable
   template:
     metadata:
       labels:
-        app: react-app
+        app: front-oda
         version: stable
     spec:
       containers:
-      - name: react-app
-        image: ${REGISTRY}/react-app:stable
+      - name: front-oda
+        image: ${REGISTRY}/front-oda:stable
         ports:
         - containerPort: 80
         resources:
@@ -30,22 +30,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: react-app-canary
+  name: front-oda-canary
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: react-app
+      app: front-oda
       version: canary
   template:
     metadata:
       labels:
-        app: react-app
+        app: front-oda
         version: canary
     spec:
       containers:
-      - name: react-app
-        image: ${REGISTRY}/react-app:canary
+      - name: front-oda
+        image: ${REGISTRY}/front-oda:canary
         ports:
         - containerPort: 80
         resources:

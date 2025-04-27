@@ -17,7 +17,7 @@ module "app_canary" {
   source = "./.terraform/modules/virtual-machine"
   
   create = true
-  name   = "react-app-canary"
+  name   = "front-oda-canary"
   
   machine_type_name = "cloud-bs1.small"
   image_name        = "cloud-ubuntu-22.04 LTS"
@@ -26,7 +26,7 @@ module "app_canary" {
   network_name        = "vpc_default"
   
   ssh_key_create = true
-  ssh_key_name   = "react-app-canary-key"
+  ssh_key_name   = "front-oda-canary-key"
 }
 
 # VM para versão Stable
@@ -34,7 +34,7 @@ module "app_stable" {
   source = "./.terraform/modules/virtual-machine"
   
   create = true
-  name   = "react-app-stable"
+  name   = "front-oda-stable"
   
   machine_type_name = "cloud-bs1.small"
   image_name        = "cloud-ubuntu-22.04 LTS"
@@ -43,7 +43,7 @@ module "app_stable" {
   network_name        = "vpc_default"
   
   ssh_key_create = true
-  ssh_key_name   = "react-app-stable-key"
+  ssh_key_name   = "front-oda-stable-key"
 }
 
 # Script de inicialização para Canary
@@ -52,10 +52,10 @@ resource "local_file" "init_script_canary" {
   content  = <<-EOF
 #!/bin/bash
 echo "${var.api_key}" | docker login ${var.registry_url} --username "${var.api_key}" --password-stdin
-docker pull ${var.registry_url}/react-app:canary
-docker stop react-app-canary || true
-docker rm react-app-canary || true
-docker run -d --name react-app-canary --restart unless-stopped -p 3001:80 ${var.registry_url}/react-app:canary
+docker pull ${var.registry_url}/front-oda:canary
+docker stop front-oda-canary || true
+docker rm front-oda-canary || true
+docker run -d --name front-oda-canary --restart unless-stopped -p 3001:80 ${var.registry_url}/front-oda:canary
 EOF
 }
 
@@ -65,10 +65,10 @@ resource "local_file" "init_script_stable" {
   content  = <<-EOF
 #!/bin/bash
 echo "${var.api_key}" | docker login ${var.registry_url} --username "${var.api_key}" --password-stdin
-docker pull ${var.registry_url}/react-app:stable
-docker stop react-app-stable || true
-docker rm react-app-stable || true
-docker run -d --name react-app-stable --restart unless-stopped -p 3001:80 ${var.registry_url}/react-app:stable
+docker pull ${var.registry_url}/front-oda:stable
+docker stop front-oda-stable || true
+docker rm front-oda-stable || true
+docker run -d --name front-oda-stable --restart unless-stopped -p 3001:80 ${var.registry_url}/front-oda:stable
 EOF
 }
 
