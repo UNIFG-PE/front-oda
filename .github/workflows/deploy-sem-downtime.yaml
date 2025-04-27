@@ -1,0 +1,176 @@
+name: Deploy Sem Downtime
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+
+env:
+  REGISTRY: container-registry.br-se1.magalu.cloud
+  MAGALU_REGION: br-se1
+  IMAGE_NAME: dev-oda-fsfg
+  CONTAINER_NAME: app-container
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          
+      - name: Instalar dependências
+        run: npm ci
+        
+      - name: Executar testes
+        run: npm test -- --watchAll=false
+      
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Gerar versão
+        id: version
+        run: echo "VERSION=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+      
+      - name: Login no Docker Registry
+        env:
+          MGC_API_KEY: ${{ secrets.MAGALU_API_KEY }}
+        run: |
+          echo "$MGC_API_KEY" | docker login ${{ env.REGISTRY }} -u "$MGC_API_KEY" --password-stdin || \
+          echo "$MGC_API_KEY" | docker login ${{ env.REGISTRY }} -u "oauth2" --password-stdin
+      
+      - name: Build e Push da imagem Docker
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
+            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            REACT_APP_VERSION=${{ steps.version.outputs.VERSION }}
+      
+      - name: Configurar SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Adicionar host à lista de conhecidos
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy sem downtime
+        env:
+          MGC_API_KEY: ${{ secrets.MAGALU_API_KEY }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          # Criar script de deploy
+          cat > deploy.sh << 'EOL'
+          #!/bin/bash
+          
+          # Configurações
+          REGISTRY="${{ env.REGISTRY }}"
+          REGION="${{ env.MAGALU_REGION }}"
+          IMAGE_NAME="${{ env.IMAGE_NAME }}"
+          VERSION="$VERSION"
+          CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
+          NEW_CONTAINER="${CONTAINER_NAME}-${VERSION}"
+          MGC_API_KEY="$MGC_API_KEY"
+          
+          # Login no Docker Registry
+          echo "$MGC_API_KEY" | docker login $REGISTRY -u "$MGC_API_KEY" --password-stdin || \
+          echo "$MGC_API_KEY" | docker login $REGISTRY -u "oauth2" --password-stdin
+          
+          # Puxar a nova imagem
+          docker pull $REGISTRY/$REGION/$IMAGE_NAME:$VERSION
+          
+          # Verificar se a porta 80 está em uso
+          PORT=80
+          if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+            # Usar porta temporária para o novo container
+            PORT=8080
+          fi
+          
+          # Iniciar o novo container
+          docker run -d --name $NEW_CONTAINER -p $PORT:80 $REGISTRY/$REGION/$IMAGE_NAME:$VERSION
+          
+          # Verificar se o novo container está saudável
+          sleep 10
+          if [ "$(docker ps -q -f name=$NEW_CONTAINER)" ]; then
+            echo "Novo container está rodando!"
+            
+            if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+              # Configurar Nginx para redirecionar tráfego para o novo container
+              if [ $PORT -eq 8080 ]; then
+                # Atualizar configuração do Nginx
+                cat > /etc/nginx/conf.d/app.conf << EOF
+          server {
+              listen 80;
+              server_name _;
+              
+              location / {
+                  proxy_pass http://localhost:8080;
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+              }
+          }
+          EOF
+                # Recarregar Nginx
+                nginx -s reload
+                
+                # Parar o container antigo
+                docker stop $CONTAINER_NAME
+                docker rm $CONTAINER_NAME
+              fi
+            fi
+            
+            # Renomear o novo container
+            docker rename $NEW_CONTAINER $CONTAINER_NAME
+            
+            # Se estiver usando a porta temporária, mover para a porta 80
+            if [ $PORT -eq 8080 ]; then
+              docker stop $CONTAINER_NAME
+              docker run -d --name $CONTAINER_NAME -p 80:80 $REGISTRY/$REGION/$IMAGE_NAME:$VERSION
+              
+              # Atualizar configuração do Nginx de volta
+              cat > /etc/nginx/conf.d/app.conf << EOF
+          server {
+              listen 80;
+              server_name _;
+              
+              location / {
+                  proxy_pass http://localhost:80;
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+              }
+          }
+          EOF
+              # Recarregar Nginx
+              nginx -s reload
+            fi
+            
+            # Limpar imagens antigas
+            docker system prune -af --volumes
+            
+            echo "Deploy concluído com sucesso!"
+          else
+            echo "Erro: O novo container não está rodando!"
+            exit 1
+          fi
+          EOL
+          
+          # Enviar script para o servidor
+          scp deploy.sh $SERVER_USER@$SERVER_IP:/tmp/deploy.sh
+          
+          # Executar script no servidor
+          ssh $SERVER_USER@$SERVER_IP "chmod +x /tmp/deploy.sh && sudo /tmp/deploy.sh"
