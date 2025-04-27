@@ -1,0 +1,98 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../css/custom.css";
+import InputField from "../components/InputField";
+import ErrorMessage from "../components/ErrorMessage";
+import Logo from "../components/Logo";
+import SubmitButton from "../components/SubmitButton";
+import backgroundImage from "../assets/backG.jpg";
+import axios from "axios";
+
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [erro, setErro] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setErro("Preencha todos os campos");
+      return;
+    }
+
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!validEmail.test(email)) {
+      setErro("Insira um email válido");
+      return;
+    }
+
+
+};
+
+return (
+    <div className="gradient">
+      <div className="backG">
+        <div
+          className="backgroundImage"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: "cover",
+            borderRadius: "16px",
+          }}
+        >
+          <div className="container">
+            <Logo />
+
+            <InputField
+              type="email"
+              placeholder="professor@ulife.com.br"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErro("");
+              }}
+            />
+
+            <InputField
+              type="password"
+              placeholder="Senha"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setErro("");
+              }}
+            />
+
+            {erro && <ErrorMessage message={erro} />}
+
+            <div className="linkContainer">
+              <button
+                className="link"
+                onClick={() => navigate("/esqueci-senha")}
+              >
+                Esqueci minha senha
+              </button>
+              <button
+                className="link"
+                onClick={() => navigate("/signup")}
+              >
+                Ainda não tem conta? Cadastre-se
+              </button>
+            </div>
+
+            <SubmitButton 
+            onClick={handleLogin} 
+            disabled={!email || !password}
+            label="Entrar"
+            />
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
