@@ -1,24 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
+import { getItem } from "./LocalStorage";
+import Login from "./screens/LoginScreen";
+import AdminScreen from "./screens/AdminScreen";
+import UserScreen from "./screens/UserScreen"; 
 
 function App() {
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const role = getItem("userRole");
+    if (role) {
+      setUserRole(role);
+    }
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} /> 
+
+        
+        {userRole === "ADMIN" && (
+          <Route path="/admin" element={<AdminScreen />} />
+        )}
+        {userRole === "USER" && (
+          <Route path="/user" element={<UserScreen />} />
+        )}
+        
+        <Route path="*" element={<Login />} />
+      </Routes>
+    </Router>
   );
 }
 
