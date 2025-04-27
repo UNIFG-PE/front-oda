@@ -46,8 +46,7 @@ jobs:
       - name: Docker Login
         env:
           MGC_API_KEY: ${{ secrets.MAGALU_API_KEY }}
-        run: |
-          echo "$MGC_API_KEY" | docker login ${{ env.REGISTRY }} -u oauth2 --password-stdin
+        run: docker login ${{ env.REGISTRY }} -u oauth2 -p "$MGC_API_KEY"
 
       - name: Create repository
         env:
