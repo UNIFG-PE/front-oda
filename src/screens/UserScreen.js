@@ -1,4 +1,3 @@
-// src/screens/UserScreen.js
 import React from "react";
 
 const UserScreen = () => {

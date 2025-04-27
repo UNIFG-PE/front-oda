@@ -1,4 +1,3 @@
-// src/screens/AdminScreen.js
 import React from "react";
 
 const AdminScreen = () => {

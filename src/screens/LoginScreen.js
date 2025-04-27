@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../css/custom.css";
+import "../style/custom.css";
 import InputField from "../components/InputField";
 import ErrorMessage from "../components/ErrorMessage";
 import Logo from "../components/Logo";
