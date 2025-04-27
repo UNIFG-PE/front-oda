@@ -1,0 +1,126 @@
+.my-reservations-page {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.reservations-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.reservations-header h1 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.reservations-header p {
+  font-size: 1.1rem;
+  color: #7f8c8d;
+}
+
+.filter-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.filter-tabs button {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  color: #7f8c8d;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s;
+}
+
+.filter-tabs button:hover {
+  color: #3498db;
+}
+
+.filter-tabs button.active {
+  color: #3498db;
+  font-weight: 600;
+}
+
+.filter-tabs button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #3498db;
+}
+
+.reservations-list {
+  margin-top: 2rem;
+}
+
+.no-reservations {
+  text-align: center;
+  padding: 3rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.no-reservations p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.view-all-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.view-all-button:hover {
+  background-color: #2980b9;
+}
+
+.cancel-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  text-align: center;
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .my-reservations-page {
+    padding: 1rem;
+  }
+  
+  .filter-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .filter-tabs button {
+    flex: 1 0 50%;
+    padding: 0.8rem;
+  }
+}

@@ -1,14 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders canary deployment title', () => {
+test('renders ODA header', () => {
   render(<App />);
-  const titleElement = screen.getByText(/teste canary deployment/i);
-  expect(titleElement).toBeInTheDocument();
+  const logoElement = screen.getByText('ODA', { selector: 'h1' });
+  expect(logoElement).toBeInTheDocument();
 });
 
-test('renders version text', () => {
+test('renders navigation links', () => {
   render(<App />);
-  const versionElement = screen.getByText(/versão:/i);
-  expect(versionElement).toBeInTheDocument();
+  const homeLink = screen.getByRole('link', { name: /home/i });
+  const reservasLink = screen.getByRole('link', { name: /minhas reservas/i });
+  const salasLink = screen.getByRole('link', { name: /salas$/i });
+
+  expect(homeLink).toBeInTheDocument();
+  expect(reservasLink).toBeInTheDocument();
+  expect(salasLink).toBeInTheDocument();
 });
