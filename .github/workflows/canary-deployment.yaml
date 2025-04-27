@@ -12,6 +12,7 @@ env:
   MAGALU_REGION: br-se1
   TF_VAR_api_key: ${{ secrets.MAGALU_API_KEY }}
   CANARY_WEIGHT: 20
+  REPOSITORY_NAME: ${{ toLowerCase(github.repository) }}
 
 jobs:
   test:
@@ -57,8 +58,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}:canary
-            ${{ env.REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ toLowerCase(github.repository) }}:canary
+            ${{ env.REGISTRY }}/${{ env.MAGALU_REGION }}/${{ toLowerCase(github.repository) }}:${{ github.sha }}
           build-args: |
             REACT_APP_VERSION=${{ github.sha }}
 
