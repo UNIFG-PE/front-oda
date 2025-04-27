@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Serviço de desenvolvimento
   app-dev:
     build:
       context: .
@@ -19,7 +18,6 @@ services:
     stdin_open: true
     tty: true
 
-  # Serviço de produção
   app-prod:
     build:
       context: .
@@ -32,7 +30,6 @@ services:
     environment:
       - NODE_ENV=production
 
-  # Serviço Canary (para deploy sem downtime)
   app-canary:
     build:
       context: .

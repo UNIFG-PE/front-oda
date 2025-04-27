@@ -86,8 +86,8 @@ jobs:
       - name: Monitor Canary Health
         id: monitor
         run: |
-          chmod +x ./monitor-canary.sh
-          ./monitor-canary.sh
+          chmod +x ./scripts/deploy/monitor-canary.sh
+          ./scripts/deploy/monitor-canary.sh
         
       - name: Rollback if Canary Unhealthy
         if: failure()
