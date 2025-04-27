@@ -125,3 +125,38 @@ else
     echo -e "4. Verifique se o repositório $IMAGE_NAME existe no registry"
     exit 1
 fi
+
+# Dockerfile
+FROM node:16-alpine AS base
+
+# Instalar PNPM
+RUN npm install -g pnpm
+
+# Configurar PNPM para ser mais rápido
+RUN pnpm config set registry https://registry.npmmirror.com/ && \
+    pnpm config set auto-install-peers true && \
+    pnpm config set strict-peer-dependencies false
+
+# Estágio de dependências
+FROM base AS deps
+WORKDIR /app
+
+# Copiar apenas os arquivos necessários para instalação
+COPY package.json pnpm-lock.yaml* ./
+
+# Instalar dependências usando PNPM
+RUN pnpm install --frozen-lockfile
+
+# Estágio de build
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm run build
+
+# Estágio de produção
+FROM nginx:alpine
+COPY --from=builder /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

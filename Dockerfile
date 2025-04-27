@@ -1,12 +1,34 @@
 # Build stage
-FROM node:16-alpine AS builder
+FROM node:16-alpine AS base
+
+# Instalar PNPM globalmente
+RUN npm install -g pnpm
+
+# Configurar PNPM para ser mais rápido
+RUN pnpm config set registry https://registry.npmmirror.com/ && \
+    pnpm config set auto-install-peers true && \
+    pnpm config set strict-peer-dependencies false
+
+# Estágio de dependências
+FROM base AS deps
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+
+# Copiar apenas os arquivos necessários para instalação
+COPY package.json ./
+# Se você tiver um pnpm-lock.yaml, descomente a linha abaixo
+# COPY pnpm-lock.yaml ./
+
+# Instalar dependências usando PNPM
+RUN pnpm install
+
+# Estágio de build
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ARG REACT_APP_VERSION
 ENV REACT_APP_VERSION=$REACT_APP_VERSION
-RUN npm run build
+RUN pnpm run build
 
 # Production stage
 FROM nginx:alpine
