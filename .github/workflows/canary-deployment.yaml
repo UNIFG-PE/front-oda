@@ -12,7 +12,7 @@ env:
   MAGALU_REGION: br-se1
   TF_VAR_api_key: ${{ secrets.MAGALU_API_KEY }}
   CANARY_WEIGHT: 20
-  IMAGE_NAME: front-oda
+  IMAGE_NAME: dev-oda-fsfg
 
 jobs:
   test:
@@ -49,7 +49,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.MAGALU_API_KEY }}" \
             -H "Content-Type: application/json" \
             "https://${{ env.REGISTRY }}/v2/${{ env.MAGALU_REGION }}/repositories" \
-            -d '{"name": "${{ github.repository }}"}'
+            -d '{"name": "${{ env.IMAGE_NAME }}"}'
         continue-on-error: true
 
       - name: Build and push Docker image

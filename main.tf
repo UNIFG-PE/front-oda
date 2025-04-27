@@ -17,7 +17,7 @@ module "app_canary" {
   source = "./.terraform/modules/virtual-machine"
   
   create = true
-  name   = "front-oda-canary"
+  name   = "dev-oda-fsfg-canary"
   
   machine_type_name = "cloud-bs1.small"
   image_name        = "cloud-ubuntu-22.04 LTS"
@@ -26,7 +26,7 @@ module "app_canary" {
   network_name        = "vpc_default"
   
   ssh_key_create = true
-  ssh_key_name   = "front-oda-canary-key"
+  ssh_key_name   = "dev-oda-fsfg-canary-key"
 }
 
 # VM para versão Stable
@@ -34,7 +34,7 @@ module "app_stable" {
   source = "./.terraform/modules/virtual-machine"
   
   create = true
-  name   = "front-oda-stable"
+  name   = "dev-oda-fsfg-stable"
   
   machine_type_name = "cloud-bs1.small"
   image_name        = "cloud-ubuntu-22.04 LTS"
@@ -43,7 +43,7 @@ module "app_stable" {
   network_name        = "vpc_default"
   
   ssh_key_create = true
-  ssh_key_name   = "front-oda-stable-key"
+  ssh_key_name   = "dev-oda-fsfg-stable-key"
 }
 
 # Script de inicialização para Canary
