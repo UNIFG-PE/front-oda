@@ -24,6 +24,19 @@ const ForgotPassword = () => {
         return;
     }
     try {
+       /*
+    const response = await axios.post("http://localhost:8080/api/auth/forgot-password", {
+        email: email.trim(),
+    });
+
+    if (response.status === 200) {
+        alert("Sucesso, Código enviado para o email: " + email);
+        navigate("/verificar-codigo", { state: { email } });
+    } else {
+        alert("Erro: Não foi possível enviar para o email de recuperação");
+    }
+    return;
+    */
         setTimeout(() => {
             alert("Sucesso, Codigo enviado para o email: " + email);
             navigate("/verificar-codigo", {state: {email}});
@@ -66,7 +79,7 @@ return (
               disabled={!email}
               className="botao centeredButton"
             >
-              <span className="textoBotao">Entrar</span>
+              <span className="textoBotao">Enviar</span>
             </button>
           </div>
         </div>
