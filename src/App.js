@@ -4,6 +4,7 @@ import { getItem } from "./LocalStorage";
 import Login from "./screens/LoginScreen";
 import AdminScreen from "./screens/AdminScreen";
 import UserScreen from "./screens/UserScreen"; 
+import ForgotPassword from "./screens/ForgotPasswordScreen";
 
 function App() {
   const [userRole, setUserRole] = useState(null);
@@ -18,7 +19,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} /> 
+        <Route path="/login" element={<Login />} />
+        <Route path="/esqueci-senha" element={<ForgotPassword />} />
 
         
         {userRole === "ADMIN" && (
