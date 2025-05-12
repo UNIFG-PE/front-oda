@@ -56,6 +56,10 @@ return (
         >
           <div className="container">
             <img src={Logo} alt="ULife Logo" className="logoImage" />
+            <h1 className="title">Digite Seu Email</h1>
+            <p className="text">
+              Digite seu e-mail para receber um código de confirmação e redefinir sua senha.
+            </p>
 
             <div className="inputWrapper">
               <label htmlFor="email" className="formLabel">Email:</label>
