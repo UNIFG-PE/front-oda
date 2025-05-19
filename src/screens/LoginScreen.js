@@ -12,11 +12,13 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    // Validação campos preenchidos
     if (!email || !password) {
       setErro("Preencha todos os campos");
       return;
     }
 
+    // Validação formato do email
     const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!validEmail.test(email)) {
       setErro("Insira um email válido");
@@ -24,56 +26,31 @@ const Login = () => {
     }
 
     try {
-      if (
-        (email === "admin@ulife.com.br" && password === "admin") ||
-        (email === "user@ulife.com.br" && password === "user")
-      ) {
-        const fakeResponse = {
-          data: {
-            role: email === "admin@ulife.com.br" ? "ADMIN" : "USER",
-            nome: email === "admin@ulife.com.br" ? "Administrador" : "Usuário Comum",
-          },
-        };
-
-        alert(`Bem-vindo, ${fakeResponse.data.nome}`);
-        setErro("");
-        localStorage.setItem("userRole", fakeResponse.data.role);
-
-        if (fakeResponse.data.role === "ADMIN") {
-          navigate("/admin");
-          window.location.reload();
-        } else {
-          navigate("/user");
-          window.location.reload();
-        }
-      } else if (email !== "admin@ulife.com.br" && email !== "user@ulife.com.br") {
-        setErro("Email não cadastrado");
-      } else {
-        setErro("Senha incorreta");
-      }
-
-      /*
-      const response = await axios.post("http://localhost:8080/api/login", {
+      // Chamada real para sua API backend
+      const response = await axios.post("http://localhost:8081/api/auth/login", {
         email: email,
         senha: password,
       });
 
       if (response.status === 200) {
-        const { token, user } = response.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-        setErro("");
-        alert(`Bem-vindo, ${user.fullname}!`);
+        const { email: returnedEmail, role } = response.data;
 
-        if (user.role === "ADMIN") {
+        alert(`Bem-vindo, ${returnedEmail}`);
+        setErro("");
+        localStorage.setItem("userRole", role);
+
+        if (role === "ADMIN") {
           navigate("/admin");
         } else {
           navigate("/user");
         }
       }
-      */
     } catch (error) {
-      setErro("Erro ao fazer login.");
+      if (error.response && error.response.status === 401) {
+        setErro("Email ou senha inválidos");
+      } else {
+        setErro("Erro ao conectar com o servidor");
+      }
     }
   };
 
@@ -88,7 +65,9 @@ const Login = () => {
             <img src={Logo} alt="ULife Logo" className="logoImage" />
 
             <div className="inputWrapper">
-              <label htmlFor="email" className="formLabel">Email:</label>
+              <label htmlFor="email" className="formLabel">
+                Email:
+              </label>
               <input
                 id="email"
                 type="email"
@@ -101,7 +80,9 @@ const Login = () => {
                 className="input"
               />
 
-              <label htmlFor="password" className="formLabel">Senha:</label>
+              <label htmlFor="password" className="formLabel">
+                Senha:
+              </label>
               <input
                 id="password"
                 type="password"
@@ -117,10 +98,18 @@ const Login = () => {
               {erro && <div className="erro">{erro}</div>}
 
               <div className="linkContainer">
-                <button className="link" onClick={() => navigate("/esqueci-senha")}>
+                <button
+                  className="link"
+                  onClick={() => navigate("/esqueci-senha")}
+                  type="button"
+                >
                   Esqueci minha senha
                 </button>
-                <button className="link" onClick={() => navigate("/signup")}>
+                <button
+                  className="link"
+                  onClick={() => navigate("/signup")}
+                  type="button"
+                >
                   Ainda não tem conta? Cadastre-se
                 </button>
               </div>
@@ -130,6 +119,7 @@ const Login = () => {
               onClick={handleLogin}
               disabled={!email || !password}
               className="botao centeredButton"
+              type="button"
             >
               <span className="textoBotao">Entrar</span>
             </button>
