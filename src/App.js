@@ -1,36 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Routes} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { getItem } from "./LocalStorage";
 import Login from "./screens/LoginScreen";
 import AdminScreen from "./screens/AdminScreen";
 import UserScreen from "./screens/UserScreen"; 
 import ForgotPassword from "./screens/ForgotPasswordScreen";
+import VerificarCodigo from "./screens/VerificarCodigoScreen";
+
+function ProtectedAdmin() {
+  const role = getItem("userRole");
+  if (role !== "ADMIN") {
+    return <Navigate to="/login" replace />;
+  }
+  return <AdminScreen />;
+}
+
+function ProtectedUser() {
+  const role = getItem("userRole");
+  if (role !== "USER") {
+    return <Navigate to="/login" replace />;
+  }
+  return <UserScreen />;
+}
 
 function App() {
-  const [userRole, setUserRole] = useState(null);
-
-  useEffect(() => {
-    const role = getItem("userRole");
-    if (role) {
-      setUserRole(role);
-    }
-  }, []);
-
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/esqueci-senha" element={<ForgotPassword />} />
-
-        
-        {userRole === "ADMIN" && (
-          <Route path="/admin" element={<AdminScreen />} />
-        )}
-        {userRole === "USER" && (
-          <Route path="/user" element={<UserScreen />} />
-        )}
-        
-        <Route path="*" element={<Login />} />
+        <Route path="/admin" element={<ProtectedAdmin />} />
+        <Route path="/user" element={<ProtectedUser />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/verificar-codigo" element={<VerificarCodigo />} />
       </Routes>
     </Router>
   );
