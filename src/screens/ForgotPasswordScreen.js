@@ -23,29 +23,22 @@ const ForgotPassword = () => {
         setErro("Insira um email válido");
         return;
     }
-    try {
-       /*
-    const response = await axios.post("http://localhost:8080/api/auth/forgot-password", {
-        email: email.trim(),
-    });
+   try {
+  const response = await axios.post("http://localhost:8081/api/auth/forgot-password", {
+    email: email.trim(),
+  });
 
-    if (response.status === 200) {
-        alert("Sucesso, Código enviado para o email: " + email);
-        navigate("/verificar-codigo", { state: { email } });
-    } else {
-        alert("Erro: Não foi possível enviar para o email de recuperação");
+  if (response.status === 200) {
+    alert("Sucesso, Código enviado para o email: " + email);
+    navigate("/verificar-codigo", { state: { email } });
+  } else {
+    alert("Erro: Não foi possível enviar para o email de recuperação");
+  }
+} catch (erro) {
+  console.error(erro);
+  alert("Erro: Não foi possível enviar para o email de recuperação");
+}
     }
-    return;
-    */
-        setTimeout(() => {
-            alert("Sucesso, Codigo enviado para o email: " + email);
-            navigate("/verificar-codigo", {state: {email}});
-        }, 1000);
-    } catch(erro){
-        console.error(erro)
-        alert("Erro: Não foi possivel enviar para o email de recuperação");
-    }
-};
 
 return (
     <div className="gradient">
