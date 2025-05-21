@@ -4,6 +4,8 @@ import "../style/custom.css";
 import Logo from "../assets/logo.png";
 import backgroundImage from "../assets/backG.jpg";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import { setItem } from "../LocalStorage";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -12,32 +14,36 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    // Validação campos preenchidos
     if (!email || !password) {
       setErro("Preencha todos os campos");
       return;
     }
 
-    // Validação formato do email
     const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!validEmail.test(email)) {
       setErro("Insira um email válido");
       return;
     }
 
+    
     try {
-      // Chamada real para sua API backend
       const response = await axios.post("http://localhost:8081/api/auth/login", {
         email: email,
         senha: password,
       });
 
       if (response.status === 200) {
-        const { email: returnedEmail, role } = response.data;
+        const { token } = response.data;
 
-        alert(`Bem-vindo, ${returnedEmail}`);
+        setItem("jwtToken", token);
+
+        const decoded = jwtDecode(token);
+        const role = decoded.role || decoded.authorities || decoded.roles;
+
+        alert(`Bem-vindo, ${email}`);
         setErro("");
-        localStorage.setItem("userRole", role);
+
+        setItem("userRole", role);
 
         if (role === "ADMIN") {
           navigate("/admin");
@@ -52,7 +58,7 @@ const Login = () => {
         setErro("Erro ao conectar com o servidor");
       }
     }
-  };
+  }
 
   return (
     <div className="gradient">
