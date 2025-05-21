@@ -5,6 +5,7 @@ import AdminScreen from "./screens/AdminScreen";
 import UserScreen from "./screens/UserScreen"; 
 import ForgotPassword from "./screens/ForgotPasswordScreen";
 import VerificarCodigo from "./screens/VerificarCodigoScreen";
+import RedefinirSenha from "./screens/ResetPasswordScreen";
 
 function ProtectedAdmin() {
   const role = getItem("userRole");
@@ -32,6 +33,7 @@ function App() {
         <Route path="/user" element={<ProtectedUser />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
         <Route path="/verificar-codigo" element={<VerificarCodigo />} />
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
       </Routes>
     </Router>
   );
